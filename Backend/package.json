@@ -1,0 +1,30 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node dist/index.js",
+    "dev": "npm run build && npm run start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "express": "^4.21.2"
+  },
+  "dependencies": {
+    "@google/genai": "^0.3.1",
+    "@google/generative-ai": "^0.24.0",
+    "@types/express": "^5.0.0",
+    "@types/unist": "^3.0.3",
+    "dotenv": "^16.4.7",
+    "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0"
+  }
+}
