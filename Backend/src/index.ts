@@ -16,62 +16,58 @@ const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 let userPrompt : string | any;
 
-app.get("/template", (req: Request, res: Response) => {
-    const { userPrompt } = req.body;
-    
-    async function main() {
-        const response = await ai.models.generateContent({
+app.post("/template", async (req: Request, res: Response) => {
+  try {    
+      const { userPrompt } = req.body;
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash-001',
+        contents: `Determine framework for: ${userPrompt}. Reply only with 'react' or 'nextjs' again telling you no extra words like - "okay, then, etc..." only reply with either its react or next`,
+      });
+      const answer = response.text?.toLowerCase();
+      const systemPrompt = getSystemPrompt();
+
+      if (answer === 'react' || answer === 'react.js' || answer === 'react'){  
+        const response = await ai.models.generateContentStream({
           model: 'gemini-2.0-flash-001',
-          contents: `when ever user gives you the prompt to make any project without telling any tech-stack then you should decide either you will use react or next.js and if user tells you to make in specific tech stack then you should follow that, \n Now, after your decision you have to mention either it is react or next.js and remember that only mention react or next.js nothing else like "is, the, etc..." nothing just mention either it's react or next.js`,
+          contents: `${systemPrompt} ${basePromptForReact.role} ${customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${basePromptForReact.message3} ${customPrompt.cs2}`
         });
-        const answer = response.text;
-
-        if (answer == 'react' || 'react.js' || 'react'){
-            async function mainReact() {
-                const systemPrompt = getSystemPrompt();
-              
-                const response = await ai.models.generateContentStream({
-                  model: 'gemini-2.0-flash-001',
-                  contents: `${systemPrompt} ${basePromptForReact.role} ${customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${basePromptForReact.message3} ${customPrompt.cs2}`
-                });
-                for await (const chunk of response) {
-                  console.log(chunk.text);
-                } 
-
-                res.json({ prompts : [basePromptForReact], reactUiPrompt : [uiPrompts.reactUiPrompt] });
-            
-            }
-
-            mainReact();
-
+        
+        for await (const chunk of response) {
+          console.log(chunk.text);
+        } 
+        res.json({
+          framework: 'React',
+          prompts: [basePromptForReact],
+          uiPrompt: uiPrompts.reactUiPrompt
+        });
+        return;
+      } 
+      
+      else if (answer === 'next' || answer === 'next.js' || answer === 'nextjs') {
+        const response = await ai.models.generateContentStream({
+            model: 'gemini-2.0-flash-001',
+            contents: `${systemPrompt} ${basePromptForNextjs.role} ${customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${basePromptForNextjs.message3} ${customPrompt.cs2}`
+        });
+        
+        for await (const chunk of response) {
+            console.log(chunk.text);
         }
-
-        if (answer == 'next' || 'next.js' || 'nextjs'){
-            async function mainNextJs() {
-                const systemPrompt = getSystemPrompt();
-              
-                const response = await ai.models.generateContentStream({
-                  model: 'gemini-2.0-flash-001',
-                  contents: `${systemPrompt} ${basePromptForNextjs.role} ${customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${basePromptForNextjs.message3} ${customPrompt.cs2}`
-                });
-                for await (const chunk of response) {
-                  console.log(chunk.text);
-                }
-
-                res.json({ prompts : [basePromptForReact], nextjsUiPrompt : [uiPrompts.nextjsUiPrompt] });
-
-            }
-
-            mainNextJs();
-            
-        }
-
+        res.json({
+          framework: 'Next',
+          prompts: [basePromptForNextjs],
+          uiPrompt: uiPrompts.nextjsUiPrompt
+        });
+        return;
       }
-    
-    main();
+
+  } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+      return;
+  }
 
 });
 
 export default userPrompt;
 
 app.listen(3000);
+
