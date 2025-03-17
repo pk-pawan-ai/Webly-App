@@ -2,11 +2,11 @@ require("dotenv").config();
 
 import express,{Request,Response} from "express";
 import { GoogleGenAI } from '@google/genai';
-import { getSystemPrompt } from './prompts';
+import { getSystemPrompt } from './conditional-prompts/SystemPrompts';
 import { customPrompt } from "./conditional-prompts/customPrompt";
-import { basePromptForReact } from "./conditional-prompts/reactUserPrompt";
-import { basePromptForNextjs } from "./conditional-prompts/nextjsUserPrompt";
+import { getBasePromptForNextjs } from "./conditional-prompts/nextjsUserPrompt";
 import { uiPrompts } from "./conditional-prompts/UiPrompts";
+import { getBasePromptForReact } from "./conditional-prompts/reactUserPrompt";
 
 const app = express();
 app.use(express.json());
@@ -14,50 +14,32 @@ app.use(express.json());
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-let userPrompt : any;
+const systemPrompt = getSystemPrompt();
 
-app.post("/template", async (req: Request, res: Response) => {
+app.post("/api/template", async (req: Request, res: Response) => {
   try {    
       const { userPrompt } = req.body;
+
       const response = await ai.models.generateContent({
         model: 'gemini-2.0-flash-001',
         contents: `Determine framework for: ${userPrompt}. Reply only with 'react' or 'nextjs' again telling you no extra words like - "okay, then, etc..." only reply with either its react or next in lowercase`,
       });
 
       const answer = response.text?.trim();
-      console.log("AI Response:", '"' + answer + '"'); 
 
-      const systemPrompt = getSystemPrompt();
-
-      if (answer == 'react'){  
-        const response = await ai.models.generateContentStream({
-          model: 'gemini-2.0-flash-001',
-          contents: `${systemPrompt} ${basePromptForReact.role} ${customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${basePromptForReact.message3} ${customPrompt.cs2}`
-        });
-        
-        for await (const chunk of response) {
-          console.log(chunk.text);
-        } 
+      if (answer == 'react' || answer == 'react.js' || answer == 'reactjs' || answer == 'react js'){
         res.json({
           framework: 'React',
-          prompts: [basePromptForReact],
+          prompts: [getBasePromptForReact(userPrompt)],
           uiPrompt: uiPrompts.reactUiPrompt
         });
         return;
       } 
       
-      else if (answer == 'next' || answer == 'nextjs') {
-        const response = await ai.models.generateContentStream({
-            model: 'gemini-2.0-flash-001',
-            contents: `${systemPrompt} ${basePromptForNextjs.role} ${customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${basePromptForNextjs.message3} ${customPrompt.cs2}`
-        });
-        
-        for await (const chunk of response) {
-            console.log(chunk.text);
-        }
+      else if (answer == 'next' || answer == 'nextjs' || answer == 'next.js' || answer == 'next js') {
         res.json({
           framework: 'Next',
-          prompts: [basePromptForNextjs],
+          prompts: [getBasePromptForNextjs(userPrompt)],
           uiPrompt: uiPrompts.nextjsUiPrompt
         });
         return;
@@ -66,8 +48,6 @@ app.post("/template", async (req: Request, res: Response) => {
     else {
       throw new Error("Invalid framework specified. Please use 'react' or 'nextjs'.");
     }
-    
-    
 
   } catch (error) {
       res.status(500).json({ error: 'Internal server error' });
@@ -77,7 +57,17 @@ app.post("/template", async (req: Request, res: Response) => {
 
 });
 
-export default userPrompt;
+app.post("/api/chat", async (req : Request, res : Response) => {
+  const { messages } = req.body;
+  const response = await ai.models.generateContentStream({
+    model: 'gemini-2.0-flash-001',
+    contents: `${systemPrompt} ${customPrompt.cs1} ${customPrompt.cs2}`
+  });
+  
+  for await (const chunk of response) {
+    console.log(chunk.text);
+  }
+  res.json({});
+});
 
 app.listen(3000);
-
