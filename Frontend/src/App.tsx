@@ -1,5 +1,5 @@
 import './App.css'
-import { Header } from './layout/header'
+import { Header } from './layout/Header'
 import { Hero } from './layout/Hero'
 
 function App() {

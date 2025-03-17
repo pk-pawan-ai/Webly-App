@@ -1,3 +1,4 @@
+import { CusorBlinkIcon } from "../assets/CursorBlinkIcon";
 import { Button } from "../components/Button";
 
 export const Hero = () => {
@@ -19,7 +20,7 @@ export const Hero = () => {
                         <input className="py-12 px-23" type="text" placeholder="How can webly help you today ?" />
                     </span>
                     <span>
-                        <Button variant="primary" text="Generate" />
+                        <Button variant="primary" text="Generate" endIcon={CusorBlinkIcon()} />
                     </span>
                 </div>
             </div>

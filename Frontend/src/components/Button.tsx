@@ -8,7 +8,7 @@ interface ButtonProps{
 }
 
 const variants = {
-    "primary" : "bg-gradient-to-r from-[#1F1C2C] via-[#928DAB] to-[#1F1C2C] bg-size-200 bg-pos-0 hover:bg-pos-100 text-white font-bold py-3.5 px-4 rounded-lg ml-2.5 shadow-[0_0_20px_#eee] ",
+    "primary" : "bg-gray-800 transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-slate-700 cursor-pointer py-3 px-4 rounded-lg ml-2 flex",
 }
 
 export const Button = ({ text, startIcon, endIcon, variant } : ButtonProps) => {
