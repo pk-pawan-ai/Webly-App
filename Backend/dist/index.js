@@ -32,27 +32,76 @@ app.use(express_1.default.json());
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ai = new genai_1.GoogleGenAI({ apiKey: GEMINI_API_KEY });
 const systemPrompt = (0, SystemPrompts_1.getSystemPrompt)();
-app.post("/api/template", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, e_1, _b, _c, _d, e_2, _e, _f;
+    var _g;
     try {
         const { userPrompt } = req.body;
+        const basePromptForReact = (0, reactUserPrompt_1.getBasePromptForReact)(userPrompt);
+        const basePromptForNextjs = (0, nextjsUserPrompt_1.getBasePromptForNextjs)(userPrompt);
         const response = yield ai.models.generateContent({
             model: 'gemini-2.0-flash-001',
             contents: `Determine framework for: ${userPrompt}. Reply only with 'react' or 'nextjs' again telling you no extra words like - "okay, then, etc..." only reply with either its react or next in lowercase`,
         });
-        const answer = (_a = response.text) === null || _a === void 0 ? void 0 : _a.trim();
+        const systemPrompt = (0, SystemPrompts_1.getSystemPrompt)();
+        const answer = (_g = response.text) === null || _g === void 0 ? void 0 : _g.trim();
+        console.log(answer);
         if (answer == 'react' || answer == 'react.js' || answer == 'reactjs' || answer == 'react js') {
+            const response = yield ai.models.generateContentStream({
+                model: 'gemini-2.0-flash-001',
+                contents: `${systemPrompt} ${basePromptForReact.role} ${customPrompt_1.customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${basePromptForReact.message3} ${customPrompt_1.customPrompt.cs2}`,
+                config: {
+                    maxOutputTokens: 20000,
+                }
+            });
+            try {
+                for (var _h = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _h = true) {
+                    _c = response_1_1.value;
+                    _h = false;
+                    const chunk = _c;
+                    console.log(chunk.text);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (!_h && !_a && (_b = response_1.return)) yield _b.call(response_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
             res.json({
                 framework: 'React',
-                prompts: [(0, reactUserPrompt_1.getBasePromptForReact)(userPrompt)],
+                prompts: [basePromptForReact],
                 uiPrompt: UiPrompts_1.uiPrompts.reactUiPrompt
             });
             return;
         }
         else if (answer == 'next' || answer == 'nextjs' || answer == 'next.js' || answer == 'next js') {
+            const response = yield ai.models.generateContentStream({
+                model: 'gemini-2.0-flash-001',
+                contents: `${systemPrompt} .role} ${customPrompt_1.customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${basePromptForNextjs.message3} ${customPrompt_1.customPrompt.cs2}`,
+                config: {
+                    maxOutputTokens: 20000,
+                }
+            });
+            try {
+                for (var _j = true, response_2 = __asyncValues(response), response_2_1; response_2_1 = yield response_2.next(), _d = response_2_1.done, !_d; _j = true) {
+                    _f = response_2_1.value;
+                    _j = false;
+                    const chunk = _f;
+                    console.log(chunk.text);
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (!_j && !_d && (_e = response_2.return)) yield _e.call(response_2);
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
             res.json({
                 framework: 'Next',
-                prompts: [(0, nextjsUserPrompt_1.getBasePromptForNextjs)(userPrompt)],
+                prompts: [basePromptForNextjs],
                 uiPrompt: UiPrompts_1.uiPrompts.nextjsUiPrompt
             });
             return;
@@ -66,29 +115,5 @@ app.post("/api/template", (req, res) => __awaiter(void 0, void 0, void 0, functi
         console.error(error);
         return;
     }
-}));
-app.post("/api/chat", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, e_1, _b, _c;
-    const { messages } = req.body;
-    const response = yield ai.models.generateContentStream({
-        model: 'gemini-2.0-flash-001',
-        contents: `${systemPrompt} ${customPrompt_1.customPrompt.cs1} ${customPrompt_1.customPrompt.cs2}`
-    });
-    try {
-        for (var _d = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _d = true) {
-            _c = response_1_1.value;
-            _d = false;
-            const chunk = _c;
-            console.log(chunk.text);
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (!_d && !_a && (_b = response_1.return)) yield _b.call(response_1);
-        }
-        finally { if (e_1) throw e_1.error; }
-    }
-    res.json({});
 }));
 app.listen(3000);
