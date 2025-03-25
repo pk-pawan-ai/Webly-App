@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "start": "node dist/index.js",
+    "start": "node dist/index.js && node src/ai_output/aiOutputVar.js",
     "dev": "npm run build && npm run start"
   },
   "keywords": [],

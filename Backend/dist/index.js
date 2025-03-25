@@ -27,11 +27,12 @@ const customPrompt_1 = require("./conditional-prompts/customPrompt");
 const nextjsUserPrompt_1 = require("./conditional-prompts/nextjsUserPrompt");
 const UiPrompts_1 = require("./conditional-prompts/UiPrompts");
 const reactUserPrompt_1 = require("./conditional-prompts/reactUserPrompt");
+const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+app.use((0, cors_1.default)());
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ai = new genai_1.GoogleGenAI({ apiKey: GEMINI_API_KEY });
-const systemPrompt = (0, SystemPrompts_1.getSystemPrompt)();
 app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, e_1, _b, _c, _d, e_2, _e, _f;
     var _g;
@@ -49,16 +50,18 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (answer == 'react' || answer == 'react.js' || answer == 'reactjs' || answer == 'react js') {
             const response = yield ai.models.generateContentStream({
                 model: 'gemini-2.0-flash-001',
-                contents: `${systemPrompt} ${basePromptForReact.role} ${customPrompt_1.customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${basePromptForReact.message3} ${customPrompt_1.customPrompt.cs2}`,
+                contents: `${systemPrompt} and one main thing to remember is you have to build any projects in such a way so that the code is ready for production like for example if you are making a todo app then make it in such a way so that on using webcontainers the code should preview in the browser like make every neccessary file like vite.config file, etc.. ${basePromptForReact.role} ${customPrompt_1.customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${UiPrompts_1.uiPrompts.reactUiPrompt} ${basePromptForReact.message3} ${customPrompt_1.customPrompt.cs2}`,
                 config: {
                     maxOutputTokens: 20000,
                 }
             });
+            let fullOutput = ``;
             try {
                 for (var _h = true, response_1 = __asyncValues(response), response_1_1; response_1_1 = yield response_1.next(), _a = response_1_1.done, !_a; _h = true) {
                     _c = response_1_1.value;
                     _h = false;
                     const chunk = _c;
+                    fullOutput += chunk.text;
                     console.log(chunk.text);
                 }
             }
@@ -72,23 +75,26 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
             res.json({
                 framework: 'React',
                 prompts: [basePromptForReact],
-                uiPrompt: UiPrompts_1.uiPrompts.reactUiPrompt
+                uiPrompt: UiPrompts_1.uiPrompts.reactUiPrompt,
+                aiOutput: fullOutput
             });
             return;
         }
         else if (answer == 'next' || answer == 'nextjs' || answer == 'next.js' || answer == 'next js') {
             const response = yield ai.models.generateContentStream({
                 model: 'gemini-2.0-flash-001',
-                contents: `${systemPrompt} .role} ${customPrompt_1.customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${basePromptForNextjs.message3} ${customPrompt_1.customPrompt.cs2}`,
+                contents: `${systemPrompt} .role} ${customPrompt_1.customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${UiPrompts_1.uiPrompts.nextjsUiPrompt} ${basePromptForNextjs.message3} ${customPrompt_1.customPrompt.cs2}`,
                 config: {
                     maxOutputTokens: 20000,
                 }
             });
+            let fullOutput = ``;
             try {
                 for (var _j = true, response_2 = __asyncValues(response), response_2_1; response_2_1 = yield response_2.next(), _d = response_2_1.done, !_d; _j = true) {
                     _f = response_2_1.value;
                     _j = false;
                     const chunk = _f;
+                    fullOutput += chunk.text;
                     console.log(chunk.text);
                 }
             }
@@ -102,7 +108,8 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
             res.json({
                 framework: 'Next',
                 prompts: [basePromptForNextjs],
-                uiPrompt: UiPrompts_1.uiPrompts.nextjsUiPrompt
+                uiPrompt: UiPrompts_1.uiPrompts.nextjsUiPrompt,
+                aiOutput: fullOutput
             });
             return;
         }

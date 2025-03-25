@@ -8,15 +8,14 @@ import { getBasePromptForNextjs } from "./conditional-prompts/nextjsUserPrompt";
 import { uiPrompts } from "./conditional-prompts/UiPrompts";
 import { getBasePromptForReact } from "./conditional-prompts/reactUserPrompt";
 import { ContentTypes } from "./types";
-
+import cors from 'cors';
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-
-const systemPrompt = getSystemPrompt();
 
 app.post("/template", async (req: Request, res: Response) => {
   try {    
@@ -37,19 +36,23 @@ app.post("/template", async (req: Request, res: Response) => {
       if (answer == 'react' || answer == 'react.js' || answer == 'reactjs' || answer == 'react js'){  
         const response = await ai.models.generateContentStream({
           model: 'gemini-2.0-flash-001',
-          contents: `${systemPrompt} ${basePromptForReact.role} ${customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${basePromptForReact.message3} ${customPrompt.cs2}`,
+          contents: `${systemPrompt} and one main thing to remember is you have to build any projects in such a way so that the code is ready for production like for example if you are making a todo app then make it in such a way so that on using webcontainers the code should preview in the browser like make every neccessary file like vite.config file, etc.. ${basePromptForReact.role} ${customPrompt.cs1} ${basePromptForReact.message1} ${basePromptForReact.message2} ${uiPrompts.reactUiPrompt} ${basePromptForReact.message3} ${customPrompt.cs2}`,
           config: {
             maxOutputTokens: 20000,
           }
         });
-        
+
+        let fullOutput = ``;
         for await (const chunk of response) {
+          fullOutput+=chunk.text;
           console.log(chunk.text);
-        } 
+        }
+
         res.json({
           framework: 'React',
           prompts: [basePromptForReact],
-          uiPrompt: uiPrompts.reactUiPrompt
+          uiPrompt: uiPrompts.reactUiPrompt,
+          aiOutput: fullOutput
         });
         return;
       } 
@@ -57,19 +60,22 @@ app.post("/template", async (req: Request, res: Response) => {
       else if (answer == 'next' || answer == 'nextjs' || answer == 'next.js' || answer == 'next js') {
         const response = await ai.models.generateContentStream({
             model: 'gemini-2.0-flash-001',
-            contents: `${systemPrompt} .role} ${customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${basePromptForNextjs.message3} ${customPrompt.cs2}`,
+            contents: `${systemPrompt} .role} ${customPrompt.cs1} ${basePromptForNextjs.message1} ${basePromptForNextjs.message2} ${uiPrompts.nextjsUiPrompt} ${basePromptForNextjs.message3} ${customPrompt.cs2}`,
             config: {
               maxOutputTokens: 20000,
             }
         });
-        
+
+        let fullOutput = ``;
         for await (const chunk of response) {
-            console.log(chunk.text);
+          fullOutput+=chunk.text;
+          console.log(chunk.text);
         }
         res.json({
           framework: 'Next',
           prompts: [basePromptForNextjs],
-          uiPrompt: uiPrompts.nextjsUiPrompt
+          uiPrompt: uiPrompts.nextjsUiPrompt,
+          aiOutput: fullOutput
         });
         return;
       }
