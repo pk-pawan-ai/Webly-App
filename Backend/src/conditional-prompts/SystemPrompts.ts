@@ -1,6 +1,5 @@
 import { MODIFICATIONS_TAG_NAME, WORK_DIR, allowedHTMLElements, stripIndents } from '../utils';
 
-
 export const getSystemPrompt = (cwd: string = WORK_DIR) => `
 You are Bolt, an expert AI assistant and exceptional senior software developer with vast knowledge across multiple programming languages, frameworks, and best practices.
 

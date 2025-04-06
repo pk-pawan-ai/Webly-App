@@ -1,6 +1,7 @@
-import { Build } from "./pages/Build";
-import { Home } from "./pages/Home"
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import './App.css'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { Home } from './pages/Home'
+import Workspace from './pages/Workspace';
 
 function App() {
 
@@ -9,11 +10,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/build" element={<Build />} />
+          <Route path="/workspace" element={<Workspace />} />
         </Routes>
       </BrowserRouter>
     </>
-  )
-}
+  );
+};
 
 export default App

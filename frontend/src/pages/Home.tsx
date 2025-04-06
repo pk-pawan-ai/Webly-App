@@ -1,47 +1,56 @@
-import axios from "axios";
+import { SparkleIcon } from "lucide-react";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { BACKEND_URL } from "../config";
+import { useNavigate } from "react-router-dom";
 
 export function Home(){
-    
-    const [textareaValue, setTextareaValue] = useState('');
+
+    const [textareaValue, setTextareaValue] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const navigate = useNavigate();
-    
-    const handleSubmit = async () => {
-        if (isLoading) return; // if already loading then returns nothing.
 
+    const handleSubmit = async () => {
+        if (isLoading || !textareaValue.trim()) return; // if already loading then returns nothing.
         try {
+            console.log(`Submitting the value ${textareaValue}`);
             setIsLoading(true); // if not then load it.
-            const response = await axios.post(`${BACKEND_URL}/template`, { userPrompt: textareaValue });
-            navigate('/build', {
+            navigate('/workspace', {
                 state : { 
-                    userPrompt: textareaValue,
-                    aiOutput : response.data.aiOutput 
+                    userPrompt: textareaValue
                 }
-            }); // Redirects to build after sending the request
+            }); // redirects to build after sending the request
         } catch (error) {
             console.error('Error sending prompt:', error);
         } finally {
             setIsLoading(false); // stop the loading 
         }
-    };
+    }
 
     const handelTextareaValueChange = (e : React.ChangeEvent<HTMLTextAreaElement>) => {
+        e.preventDefault();
         setTextareaValue(e.target.value);
     }
 
     return (
-        <>
-            <div>
-                <div className="flex">
-                    <textarea className="outline-2 bg-gray-200 m-4" name="chatAI" placeholder="what do u want to build" onChange={handelTextareaValueChange}/>
-                    <button className="outline-2 p-1 mt-2 cursor-pointer" onClick={handleSubmit}>
-                        {isLoading ? "Sending to BE...." : "Submit"}
-                    </button>
+        <section>
+            <div className="h-screen bg-slate-900 width-full">
+                <div>
+                    <div className="flex justify-center text-3xl text-amber-50 font-bold font-mono py-4 pt-55">
+                        Your Code, Our Tech !
+                    </div>
+                    <div className="flex justify-center">
+                        <Input 
+                            ids={1} 
+                            placeholder={`var1`} 
+                            onChange={handelTextareaValueChange}
+                        />
+                    </div>
+                    <div className="flex justify-center pt-2.5">
+                        <Button onClick={handleSubmit} variant={`primary`} text="Generate" startIcon={<SparkleIcon className="w-4"/>}/>
+                    </div>
                 </div>
             </div>
-        </>
+        </section>
     );
-};
+}
