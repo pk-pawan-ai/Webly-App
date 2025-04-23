@@ -12,6 +12,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@types/axios": "^0.9.36",
+    "@webcontainer/api": "^1.5.3",
     "axios": "^1.8.4",
     "lucide-react": "^0.485.0",
     "react": "^19.0.0",

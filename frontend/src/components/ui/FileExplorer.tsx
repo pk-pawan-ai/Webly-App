@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FileExplorerProps, FileSystemNode } from '../../types/types';
-import { FileOrFolder } from './FileorFolder';
+import { FileOrFolder } from './FileOrFolder';
+
 
 const FileExplorer = ({onFileSelect, files = []} : FileExplorerProps) => {
   const [fileSystem, setFileSystem] = useState<FileSystemNode[]>([]);

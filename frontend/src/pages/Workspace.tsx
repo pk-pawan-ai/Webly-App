@@ -8,8 +8,10 @@ import axios from "axios";
 import ChatSection from "../components/ui/ChatSection";
 import { UiPromptParser } from "../parser-functions/UiPromptParser";
 import { AiOutputParser } from "../parser-functions/AiOutputParser";
-import Preview from "../components/ui/Preview";
 import { ToggleButton } from "../components/ui/ToggleButton";
+import { useWebContainer } from "../hooks/useWebContainer";
+import { PreviewFrame } from "../components/ui/Preview";
+import { WebContainer } from "@webcontainer/api";
 
 const Workspace = () => {
   const [aiResponse, setAiResponse] = useState<string>("");
@@ -18,10 +20,9 @@ const Workspace = () => {
   const [fileSystem, setFileSystem] = useState<FileSystemNode[]>([]);
   const [currentView, setCurrentView] = useState<'code' | 'preview'>('code');
   const initRef = useRef(false);
-
   const location = useLocation();
-  // Get both userPrompt and aiOutput from navigation state
   const userPrompt = location.state?.userPrompt || "";
+  const webcontainer = useWebContainer();
 
   const handleFileSelect = (node : FileSystemNode) => {
     if (node.type === 'file' && node.content) {
@@ -31,46 +32,105 @@ const Workspace = () => {
 
   // Helper function to create file system structure
   const createFileSystemStructure = (files: { title: string, code: string }[]) => {
-  const fileSystem: FileSystemNode[] = [];
-  const folderMap = new Map<string, FileSystemNode>();
+    const fileSystem: FileSystemNode[] = [];
+    const folderMap = new Map<string, FileSystemNode>();
 
-  files.forEach(file => {
-    const path = file.title.replace('Create ', '').split('/');
-    const fileName = path[path.length - 1];
-    const folders = path.slice(0, -1);
+    files.forEach(file => {
+      const path = file.title.replace('Create ', '').split('/');
+      const fileName = path[path.length - 1];
+      const folders = path.slice(0, -1);
 
-    let currentLevel = fileSystem;
-    let currentPath = '';
+      let currentLevel = fileSystem;
+      let currentPath = '';
 
-    // Create folders if they don't exist
-    folders.forEach(folder => {
-      currentPath += folder + '/';
-      if (!folderMap.has(currentPath)) {
-        const newFolder: FileSystemNode = {
-          name: folder,
-          type: 'folder',
-          isOpen: true,
-          children: []
-        };
-        folderMap.set(currentPath, newFolder);
-        currentLevel.push(newFolder);
-      }
-      const folderNode = folderMap.get(currentPath);
-      currentLevel = folderNode!.children!;
+      // Create folders if they don't exist
+      folders.forEach(folder => {
+        currentPath += folder + '/';
+        if (!folderMap.has(currentPath)) {
+          const newFolder: FileSystemNode = {
+            name: folder,
+            type: 'folder',
+            isOpen: true,
+            children: []
+          };
+          folderMap.set(currentPath, newFolder);
+          currentLevel.push(newFolder);
+        }
+        const folderNode = folderMap.get(currentPath);
+        currentLevel = folderNode!.children!;
+      });
+
+      // Add file
+      currentLevel.push({
+        name: fileName,
+        type: 'file',
+        content: file.code,
+        isOpen: false
+      });
     });
 
-    // Add file
-    currentLevel.push({
-      name: fileName,
-      type: 'file',
-      content: file.code,
-      isOpen: false
-    });
-    });
-
+    console.log(fileSystem);
     return fileSystem;
-
   };
+
+  useEffect(() => {
+    const mountStructure : any = {};
+    
+    // Helper function to recursively process file system nodes
+    const processNode = (node : any) => {
+      if (node.type === 'file') {
+        return {
+          file: {
+            contents: node.content || ''
+          }
+        };
+      } else if (node.type === 'folder') {
+        const folderContents : any = {};
+        
+        if (node.children && node.children.length > 0) {
+          node.children.forEach((child: { name: string | number; })  => {
+            folderContents[child.name] = processNode(child);
+          });
+        }
+        
+        return {
+          directory: folderContents
+        };
+      }
+      return null;
+    };
+    
+    // Process each top-level node
+    fileSystem.forEach(node => {
+      if (node.type === 'file') {
+        mountStructure[node.name] = {
+          file: {
+            contents: node.content || ''
+          }
+        };
+      } else if (node.type === 'folder') {
+        const folderStructure : any = {};
+        
+        if (node.children && node.children.length > 0) {
+          node.children.forEach(child => {
+            folderStructure[child.name] = processNode(child);
+          });
+        }
+        
+        mountStructure[node.name] = {
+          directory: folderStructure
+        };
+      }
+    });
+    
+    // Mount the structure if webcontainer exists
+    if (webcontainer) {
+      webcontainer.mount(mountStructure);
+    }
+    
+    console.log(mountStructure);
+
+  }, [fileSystem, webcontainer]);
 
   async function init() {
     try {
@@ -137,15 +197,17 @@ const Workspace = () => {
         <div className="flex flex-col w-[55vw] h-[100vh]">
           <div className="p-4">
             <ToggleButton 
-                currentView={currentView}
-                onToggle={setCurrentView}
-              />
+              currentView={currentView}
+              onToggle={setCurrentView}
+            />
           </div>
           <div className="flex">
             {currentView === 'code' ? (
               <CodeEditor content={selectedFileContent}/>
             ) : (
-              <Preview />
+              <div className="w-full h-full flex items-center justify-center text-white">
+                {webcontainer && <PreviewFrame files={fileSystem} webContainer={webcontainer} />}
+              </div>
             )}
           </div>
         </div>

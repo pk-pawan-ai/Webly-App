@@ -117,4 +117,4 @@ app.post("/api/chat", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return;
     }
 }));
-app.listen(3000);
+app.listen(8080);

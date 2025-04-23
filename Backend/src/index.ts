@@ -98,4 +98,4 @@ app.post("/api/chat", async (req: Request, res: Response) => {
 
 });
 
-app.listen(3000);
+app.listen(8080);
