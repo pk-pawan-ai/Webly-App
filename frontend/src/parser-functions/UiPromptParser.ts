@@ -4,28 +4,25 @@ export function UiPromptParser(response: string): FileSystemItem[] {
   const fileSystemData: FileSystemItem[] = [];
   let idCounter = 1;
 
-  // Improved regex to handle both fenced and unfenced code blocks
   const fileBlockRegex = /([^:\n]+):\n```(?:\w+)?\n([\s\S]*?)```/g;
 
   let match;
   while ((match = fileBlockRegex.exec(response)) !== null) {
     const [_, fileName, fileContent] = match;
     
-    // Clean up the file name and content
     const cleanFileName = fileName.trim();
     let cleanContent = fileContent
-      .replace(/\\n/g, '\n') // Convert escaped newlines to actual newlines
-      .replace(/^\s+|\s+$/g, '') // Trim whitespace
-      .replace(/\r\n/g, '\n') // Normalize line endings
-      .replace(/\n{3,}/g, '\n\n'); // Reduce multiple newlines
+      .replace(/\\n/g, '\n') 
+      .replace(/^\s+|\s+$/g, '') 
+      .replace(/\r\n/g, '\n') 
+      .replace(/\n{3,}/g, '\n\n'); 
 
-    // Handle special case for configuration files
     if (cleanFileName.endsWith('.config.ts') || 
         cleanFileName.endsWith('.config.js') || 
         cleanFileName.endsWith('.json')) {
       cleanContent = cleanContent
-        .replace(/\\\"/g, '"') // Fix escaped quotes
-        .replace(/\\n/g, '\n'); // Fix escaped newlines
+        .replace(/\\\"/g, '"') 
+        .replace(/\\n/g, '\n');
     }
 
     fileSystemData.push({

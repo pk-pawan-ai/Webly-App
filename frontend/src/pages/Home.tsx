@@ -11,19 +11,19 @@ export function Home(){
     const navigate = useNavigate();
 
     const handleSubmit = async () => {
-        if (isLoading || !textareaValue.trim()) return; // if already loading then returns nothing.
+        if (isLoading || !textareaValue.trim()) return; 
         try {
             console.log(`Submitting the value ${textareaValue}`);
-            setIsLoading(true); // if not then load it.
+            setIsLoading(true); 
             navigate('/workspace', {
                 state : { 
                     userPrompt: textareaValue
                 }
-            }); // redirects to build after sending the request
+            }); 
         } catch (error) {
             console.error('Error sending prompt:', error);
         } finally {
-            setIsLoading(false); // stop the loading 
+            setIsLoading(false); 
         }
     }
 

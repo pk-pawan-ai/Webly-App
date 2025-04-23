@@ -71,9 +71,9 @@ export interface Message {
 export interface FileSystemNode {
     name : string;
     type : 'file' | 'folder';
-    content ?: string; // for files
-    children ?: FileSystemNode[]; // for nested folders
-    isOpen ?: boolean; // tracks folder openend or closed
+    content ?: string; 
+    children ?: FileSystemNode[]; 
+    isOpen ?: boolean; 
 }
 
 export interface FileOrFolderProps {

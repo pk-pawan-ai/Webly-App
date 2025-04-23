@@ -3,11 +3,6 @@ export const WORK_DIR_NAME = 'project';
 export const WORK_DIR = `/home/${WORK_DIR_NAME}`;
 export const MODIFICATIONS_TAG_NAME = 'bolt_file_modifications';
 
-
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-// allowedHTMLElements
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import type { PluggableList, Plugin } from 'unified';
@@ -125,9 +120,6 @@ const limitedMarkdownPlugin: Plugin = () => {
   };
 };
 
-// ---------------------------------------------------------------------------------------------------------------------------------------------------
-
-//stripIndents
 export function stripIndents(value: string): string;
 export function stripIndents(strings: TemplateStringsArray, ...values: any[]): string;
 export function stripIndents(arg0: string | TemplateStringsArray, ...values: any[]) {

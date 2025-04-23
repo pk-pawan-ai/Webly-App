@@ -17,7 +17,6 @@ app.use(cors());
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-// this ep tells the choice of framework
 app.post("/api/template", async (req : Request, res : Response) => {
   const { userPrompt } = req.body;
   const basePromptForReact = getBasePromptForReact(userPrompt);
@@ -52,29 +51,26 @@ app.post("/api/template", async (req : Request, res : Response) => {
 
 })
 
-// this ep give the final output
 app.post("/api/chat", async (req: Request, res: Response) => {
   try {
     const systemPrompt = getSystemPrompt();
     const { message } = req.body;
-    // Extract the relevant parts from the message object
     const userMessage = message[0];
     const actualPrompt = userMessage?.rawMessage || '';
     const projectFiles = userMessage?.message1 || '';
     const designGuidelines = userMessage?.message2 || '';
     const breifUserPrompt = userMessage?.message3 || '';
 
-    // Construct the proper prompt
     const response = await ai.models.generateContentStream({
       model: 'gemini-2.0-flash-001',
       contents: [
         `${systemPrompt}`,
-        `${projectFiles}`, // Project files context
-        `${designGuidelines}`, // Design guidelines
-        `${customPrompt.cs1}`, // Custom prompt prefix
-        `${breifUserPrompt}`, // this is message3
-        `${actualPrompt}`, // The actual user request
-        `${customPrompt.cs2}` // Custom prompt suffix
+        `${projectFiles}`, 
+        `${designGuidelines}`, 
+        `${customPrompt.cs1}`, 
+        `${breifUserPrompt}`,  
+        `${actualPrompt}`, 
+        `${customPrompt.cs2}` 
       ].join('\n'),
       config: {
         maxOutputTokens: 20000,

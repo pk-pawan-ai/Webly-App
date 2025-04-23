@@ -88,18 +88,18 @@ function formatCssCode(code: string): string {
 
 function formatHtmlCode(code: string): string {
   return code
-    .replace(/>\s+</g, '>\n<') // Add newline between tags
-    .replace(/(<[^/][^>]*>)\s+/g, '$1\n  ') // Add newline and indent after opening tags
-    .replace(/\s+(<\/[^>]*>)/g, '\n$1') // Add newline before closing tags
-    .replace(/^\s+</gm, '<') // Remove leading spaces before tags
-    .replace(/>\s+$/gm, '>'); // Remove trailing spaces after tags
+    .replace(/>\s+</g, '>\n<')
+    .replace(/(<[^/][^>]*>)\s+/g, '$1\n  ')
+    .replace(/\s+(<\/[^>]*>)/g, '\n$1') 
+    .replace(/^\s+</gm, '<')
+    .replace(/>\s+$/gm, '>');
 }
 
 export function AiOutputParser(aiOutput: string): FileSystemItem[] {
   const fileSystemData: FileSystemItem[] = [];
   let idCounter = 1;
 
-  // Extract file actions with their content
+
   const fileRegex = /<boltAction\s+type="file"\s+filePath="([^"]+)">([\s\S]*?)<\/boltAction>/g;
   let match;
 
@@ -117,7 +117,6 @@ export function AiOutputParser(aiOutput: string): FileSystemItem[] {
     }
   }
 
-  // Extract shell commands
   const shellRegex = /<boltAction\s+type="shell">([\s\S]*?)<\/boltAction>/g;
   while ((match = shellRegex.exec(aiOutput)) !== null) {
     const command = match[1].trim();
@@ -125,7 +124,7 @@ export function AiOutputParser(aiOutput: string): FileSystemItem[] {
       fileSystemData.push({
         id: idCounter++,
         title: `Run ${command}`,
-        type: StepType.RunShellScript, // Changed from CreateFile to RunShellScript
+        type: StepType.RunShellScript, 
         code: command,
         description: "",
         status: "pending"

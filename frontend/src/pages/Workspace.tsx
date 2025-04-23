@@ -11,7 +11,6 @@ import { AiOutputParser } from "../parser-functions/AiOutputParser";
 import { ToggleButton } from "../components/ui/ToggleButton";
 import { useWebContainer } from "../hooks/useWebContainer";
 import { PreviewFrame } from "../components/ui/Preview";
-import { WebContainer } from "@webcontainer/api";
 
 const Workspace = () => {
   const [aiResponse, setAiResponse] = useState<string>("");
@@ -43,7 +42,6 @@ const Workspace = () => {
       let currentLevel = fileSystem;
       let currentPath = '';
 
-      // Create folders if they don't exist
       folders.forEach(folder => {
         currentPath += folder + '/';
         if (!folderMap.has(currentPath)) {
@@ -76,7 +74,6 @@ const Workspace = () => {
   useEffect(() => {
     const mountStructure : any = {};
     
-    // Helper function to recursively process file system nodes
     const processNode = (node : any) => {
       if (node.type === 'file') {
         return {
@@ -100,7 +97,6 @@ const Workspace = () => {
       return null;
     };
     
-    // Process each top-level node
     fileSystem.forEach(node => {
       if (node.type === 'file') {
         mountStructure[node.name] = {
@@ -123,7 +119,6 @@ const Workspace = () => {
       }
     });
     
-    // Mount the structure if webcontainer exists
     if (webcontainer) {
       webcontainer.mount(mountStructure);
     }
@@ -148,11 +143,9 @@ const Workspace = () => {
       const aiOutput = chatRes.data.aiOutput;
       const parsedAiOutput = AiOutputParser(aiOutput);
   
-      // Separate files and commands
       const fileSteps = parsedAiOutput.filter(item => !item.title.startsWith('Run '));
       const commandSteps = parsedAiOutput.filter(item => item.title.startsWith('Run '));
   
-      // Filter out duplicate files from template files
       const uniqueTemplateFiles = parsedFiles.filter(file => {
         const fileName = file.title.replace('Create ', '');
         return !fileSteps.some(aiFile => 
@@ -160,11 +153,9 @@ const Workspace = () => {
         );
       });
   
-      // Create file system structure only with files (no commands)
       const fileSystemStructure = createFileSystemStructure([...uniqueTemplateFiles, ...fileSteps]);
       setFileSystem(fileSystemStructure);
   
-      // Show all steps (including commands) in chat
       const allSteps = [...uniqueTemplateFiles, ...fileSteps, ...commandSteps]
         .map(file => file.title)
         .join('\n');
